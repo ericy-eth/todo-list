@@ -1,5 +1,5 @@
 //jshint esversion:6
-
+require("dotenv").config()
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose")
@@ -7,12 +7,14 @@ let isData = false;
 const app = express();
 app.set('view engine', 'ejs');
 
+const serverUser = process.env.KEY;
+const serverPassword = process.env.SECRET;
 const _ = require("lodash")
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb+srv://admin:1234@cluster0.qkhuswz.mongodb.net/todoListDB")
+mongoose.connect("mongodb+srv://"+serverUser+":"+ serverPassword +"@cluster0.qkhuswz.mongodb.net/todoListDB")
 
 const taskSchema = {
   name: String
@@ -97,13 +99,11 @@ app.post("/delete", function(req,res){
   const listName = req.body.listName;
   if(listName==="Today"){
     Task.findByIdAndRemove(checkedItemID, function(err){
-      if(err){
-        console.log(err);
-      }else{
-        console.log("Item Deleted");
+      if(!err){
+        res.redirect("/")
+
       }
     })
-    res.redirect("/")
   }else{
     List.findOneAndUpdate({name: listName},{$pull: {items: {_id: checkedItemID}}}, function(err, foundList){
       if(!err){
